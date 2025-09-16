@@ -1,0 +1,24 @@
+{% extends "configurator/base.html" %}
+{% block title %}{{ job.designation }} — {{ job.name }}{% endblock %}
+{% block content %}
+<div class="container">
+  <section class="section">
+    <a href="{% url 'configurator:career_list' %}" class="btn btn--outline btn--sm">← Back to Careers</a>
+    <h1 class="h1" style="margin-top:12px;">{{ job.designation }} — {{ job.name }}</h1>
+
+    <div class="career-detail__meta">
+      <p><strong>Location:</strong> {{ job.territory }}</p>
+      {% if job.custom_no_of_vacancy %}<p><strong>Vacancies:</strong> {{ job.custom_no_of_vacancy }}</p>{% endif %}
+      {% if job.qualification %}<p><strong>Qualification:</strong> {{ job.qualification }}</p>{% endif %}
+    </div>
+
+    {% if job.description %}
+      <div class="career-detail__desc">{{ job.description|safe }}</div>
+    {% endif %}
+
+    <p style="margin-top:16px;">
+      <a class="btn" href="{% url 'configurator:career_apply' %}?job_title={{ job.name|urlencode }}&designation={{ job.designation|urlencode }}">Apply Now</a>
+    </p>
+  </section>
+</div>
+{% endblock %}

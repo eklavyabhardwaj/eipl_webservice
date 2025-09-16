@@ -1,0 +1,31 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+  <h1>{{ title }}</h1>
+  <form method="post" enctype="multipart/form-data" style="max-width:640px">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="default">Import</button>
+    <a class="button" href="{% url 'admin:configurator_item_changelist' %}" style="margin-left:8px">Cancel</a>
+  </form>
+
+  <p style="margin-top:16px">
+    Need a template?
+    <a href="{% url 'admin:configurator_item_template' %}">Download CSV template</a>
+  </p>
+
+  <details style="margin-top:16px">
+    <summary><b>Columns</b></summary>
+    <pre>
+group_name (required)
+item_name  (required)
+item_code  (optional)
+description (optional)
+is_active  (optional) → true/false/1/0/yes/no
+features   (optional) → separate with ";" or newlines
+specs      (optional) → Semicolon-separated; each spec is pipe-separated k=v:
+                        label=CPU|value=Intel i5|unit=—|order=1|highlight=0
+    </pre>
+  </details>
+{% endblock %}

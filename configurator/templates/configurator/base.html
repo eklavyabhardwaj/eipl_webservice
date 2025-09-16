@@ -1,0 +1,210 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>{% block title %}Electrolab — Products{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'configurator.css' %}">
+
+  {# --- CSS for responsive 'Product Configurator' button placement --- #}
+  <style>
+    /* By default, hide the button container meant only for mobile view. */
+    .mobile-cta-container {
+      display: none;
+    }
+
+    @media (max-width: 640px) {
+      /* On mobile, hide ONLY the header button (strong override). */
+      .header__cta-btn {
+        display: none !important;
+      }
+
+      /* On mobile, show the dedicated button container in the main content area. */
+      .mobile-cta-container {
+        display: block;
+        text-align: center; /* Center the button */
+        margin-bottom: 24px; /* Add space below the button */
+      }
+    }
+</style>
+  {# ----------------------------------------------------------------- #}
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <!-- Molecule background (must be the FIRST child of <body>) -->
+  <div class="bg-molecule" aria-hidden="true">
+    <!-- Back layer -->
+    <div class="mol mol-back">
+      <svg class="rot" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+        <!-- bonds -->
+        <g stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.35">
+          <line x1="160" y1="140" x2="300" y2="220"/>
+          <line x1="300" y1="220" x2="460" y2="180"/>
+          <line x1="300" y1="220" x2="240" y2="360"/>
+          <line x1="460" y1="180" x2="600" y2="260"/>
+          <line x1="600" y1="260" x2="520" y2="380"/>
+          <line x1="520" y1="380" x2="360" y2="420"/>
+          <line x1="240" y1="360" x2="360" y2="420"/>
+        </g>
+        <!-- atoms -->
+        <g fill="currentColor">
+          <circle cx="160" cy="140" r="10" opacity="0.35"/>
+          <circle cx="300" cy="220" r="14" opacity="0.6"/>
+          <circle cx="460" cy="180" r="12" opacity="0.45"/>
+          <circle cx="600" cy="260" r="16" opacity="0.6"/>
+          <circle cx="520" cy="380" r="12" opacity="0.45"/>
+          <circle cx="360" cy="420" r="14" opacity="0.6"/>
+          <circle cx="240" cy="360" r="12" opacity="0.45"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Mid layer -->
+    <div class="mol mol-mid">
+      <svg class="rot" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+        <g stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.35">
+          <line x1="120" y1="460" x2="260" y2="360"/>
+          <line x1="260" y1="360" x2="420" y2="440"/>
+          <line x1="420" y1="440" x2="560" y2="340"/>
+          <line x1="560" y1="340" x2="680" y2="440"/>
+          <line x1="260" y1="360" x2="340" y2="260"/>
+          <line x1="340" y1="260" x2="500" y2="280"/>
+        </g>
+        <g fill="currentColor">
+          <circle cx="120" cy="460" r="10" opacity="0.3"/>
+          <circle cx="260" cy="360" r="12" opacity="0.55"/>
+          <circle cx="420" cy="440" r="12" opacity="0.45"/>
+          <circle cx="560" cy="340" r="14" opacity="0.55"/>
+          <circle cx="680" cy="440" r="10" opacity="0.3"/>
+          <circle cx="340" cy="260" r="10" opacity="0.4"/>
+          <circle cx="500" cy="280" r="12" opacity="0.45"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Front layer -->
+    <div class="mol mol-front">
+      <svg class="rot" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+        <g stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.35">
+          <line x1="100" y1="180" x2="200" y2="100"/>
+          <line x1="200" y1="100" x2="320" y2="160"/>
+          <line x1="320" y1="160" x2="420" y2="100"/>
+          <line x1="420" y1="100" x2="540" y2="160"/>
+          <line x1="540" y1="160" x2="680" y2="120"/>
+        </g>
+        <g fill="currentColor">
+          <circle cx="100" cy="180" r="8"  opacity="0.35"/>
+          <circle cx="200" cy="100" r="10" opacity="0.55"/>
+          <circle cx="320" cy="160" r="10" opacity="0.55"/>
+          <circle cx="420" cy="100" r="8"  opacity="0.45"/>
+          <circle cx="540" cy="160" r="10" opacity="0.55"/>
+          <circle cx="680" cy="120" r="8"  opacity="0.35"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <!-- /Molecule background -->
+
+  <!-- Everything else inside page-content -->
+  <div class="page-content">
+    <header class="header">
+      <div class="container header__row">
+        <a href="{% url 'configurator:group_list' %}" class="header__brand header__brand--withlogo">
+          <img class="header__logo" src="{% static 'configurator/img/logo.png' %}" alt="ELECTROLAB"
+               width="260" height="60" decoding="async" loading="eager" />
+          <span class="visually-hidden">ELECTROLAB</span>
+        </a>
+
+        <div class="header__actions">
+          <nav class="xl-expando xl-expando--left" aria-label="Primary">
+            <button class="xl-expando__btn" type="button" aria-controls="xl-primary-menu" aria-expanded="false">
+              <span class="xl-expando__bar" aria-hidden="true"></span>
+              <span class="xl-expando__bar" aria-hidden="true"></span>
+              <span class="xl-expando__bar" aria-hidden="true"></span>
+              <span class="visually-hidden">Toggle menu</span>
+            </button>
+
+            <div class="xl-expando__panel">
+              <ul id="xl-primary-menu" class="xl-expando__menu" role="menubar">
+                {% for page in menu_pages %}
+                  <li role="none">
+                    {% if page.external_url %}
+                      <a role="menuitem" href="{{ page.external_url }}" target="_blank" rel="noopener">
+                        {{ page.title }}
+                      </a>
+                    {% else %}
+                      <a role="menuitem" href="{% url 'configurator:page' page.slug %}">
+                        {{ page.title }}
+                      </a>
+                    {% endif %}
+                  </li>
+                {% endfor %}
+
+                <!-- Always show Careers link -->
+                <li role="none">
+                  <a role="menuitem" href="{% url 'configurator:career_list' %}">Careers</a>
+                </li>
+
+                <!-- header nav, next to "Careers" -->
+                <li role="none">
+                  <a role="menuitem" href="{% url 'configurator:contact' %}">Contact</a>
+                </li>
+
+              </ul>
+            </div>
+          </nav>
+
+          <a class="btn btn--outline btn--sm header__cta-btn" href="{% url 'configurator:group_list' %}">Explore Configarator</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      {# This is the new location for the button on mobile screens. #}
+      <div class="mobile-cta-container">
+        <a class="btn" href="{% url 'configurator:group_list' %}">Explore Configarator</a>
+      </div>
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <script src="{% static 'interactions.js' %}"></script>
+  <script src="{% static 'slider.js' %}"></script>
+  <script src="{% static 'modal.js' %}"></script>
+  <script src="{% static 'group-hover.js' %}"></script>
+  <script src="{% static 'group-carousel.js' %}"></script>
+
+  <script>
+    (function(){
+      const nav  = document.querySelector('.xl-expando--left');
+      const btn  = nav?.querySelector('.xl-expando__btn');
+      if(!nav || !btn) return;
+
+      btn.addEventListener('click', () => {
+        const open = nav.classList.toggle('is-open');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+
+      // Click outside to close
+      document.addEventListener('click', (e) => {
+        if(!nav.contains(e.target)) {
+          nav.classList.remove('is-open');
+          btn.setAttribute('aria-expanded','false');
+        }
+      });
+
+      // Esc to close
+      document.addEventListener('keydown', (e) => {
+        if(e.key === 'Escape'){
+          nav.classList.remove('is-open');
+          btn.setAttribute('aria-expanded','false');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

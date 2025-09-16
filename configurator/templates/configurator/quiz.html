@@ -1,0 +1,268 @@
+{% extends "configurator/base.html" %}
+{% block title %}Electrolab — {{ group.name }} · Quiz{% endblock %}
+{% block header_title %}{{ group.name }} — Quiz{% endblock %}
+
+{% block content %}
+<section class="section">
+
+  <!-- Progress bar -->
+  <div class="progress"><div class="progress__bar" id="quizProgressBar"></div></div>
+
+  <!-- Question tag navigation -->
+  <div class="question-tags-nav">
+    {% for tag in question_tags %}
+      <button type="button" class="tag-btn" onclick="jumpToPanel({{ forloop.counter0 }})">
+        <span>{{ tag }}</span>
+      </button>
+    {% endfor %}
+  </div>
+
+  <!-- Quiz Form -->
+  <form id="quizForm" method="post" novalidate autocomplete="off">
+    {% csrf_token %}
+    <input type="hidden" name="step" value="answers">
+
+    <div id="quizPanels">
+      {% for field in form %}
+        {% with is_multi=field.field.widget.attrs.data_multi %}
+        {% with is_required=field.field.required %}
+        <fieldset class="qpanel"
+                  data-panel-index="{{ forloop.counter0 }}"
+                  data-multi="{{ is_multi }}"
+                  data-required="{{ is_required|yesno:'1,0' }}"
+                  aria-hidden="true">
+          <legend class="h2" style="margin-bottom:8px;">
+            {{ field.label }}
+            {% if is_multi == '1' %}
+              <span class="badge badge--multi">Multi-select</span>
+            {% else %}
+              <span class="badge badge--single">Single choice</span>
+            {% endif %}
+          </legend>
+
+          <p class="qhelp">{{ is_multi|yesno:"Select all that apply.,Select one option." }}</p>
+
+          {% with first_choice=field.field.queryset|first %}
+            {% if first_choice and first_choice.question.image %}
+              <div class="question-media-wrap">
+                <img class="question-media" src="{{ first_choice.question.image.url }}" alt="{{ field.label }}">
+              </div>
+            {% endif %}
+          {% endwith %}
+
+          <div class="choice">
+            {% for opt in field.field.queryset %}
+              {% with input_id=field.name|stringformat:"s"|add:"_"|add:opt.id|stringformat:"s" %}
+              <label class="choice__item"
+                     data-type="{% if is_multi == '1' %}checkbox{% else %}radio{% endif %}"
+                     for="{{ input_id }}">
+                {% if is_multi == '1' %}
+                  <input id="{{ input_id }}" type="checkbox" name="{{ field.name }}" value="{{ opt.id }}"
+                         {% if field.value and opt.id in field.value %}checked{% endif %} />
+                {% else %}
+                  <input id="{{ input_id }}" type="radio" name="{{ field.name }}" value="{{ opt.id }}"
+                         {% if field.value == opt.id %}checked{% endif %} />
+                {% endif %}
+                <span class="choice__tick"><span class="choice__mark"></span></span>
+                <span class="choice__body">
+                  {% if opt.image %}
+                    <img src="{{ opt.image.url }}" alt="{{ opt.text }}" class="choice-media">
+                  {% endif %}
+                  <span class="choice__text">{{ opt.text }}</span>
+                </span>
+              </label>
+              {% endwith %}
+            {% endfor %}
+          </div>
+
+          {% if field.errors %}
+            <div class="field-error">{{ field.errors }}</div>
+          {% endif %}
+        </fieldset>
+        {% endwith %}
+        {% endwith %}
+      {% endfor %}
+    </div>
+
+    <!-- Navigation Controls -->
+    <div class="quiz-nav" style="margin-top:14px; display:flex; gap:10px; align-items:center;">
+      <button type="button" id="btnPrev" class="btn btn--ghost" disabled>← Previous</button>
+      <button type="button" id="btnNext" class="btn">Next →</button>
+      <button type="submit" id="btnSubmit" class="btn" style="display:none;">Continue</button>
+      <span id="quizStepBadge" class="p" style="margin-left:auto;"></span>
+    </div>
+  </form>
+</section>
+
+<!-- Script -->
+<script>
+  let panels = [];
+  let showPanel;
+
+  (function() {
+    const form = document.getElementById('quizForm');
+    panels = Array.from(document.querySelectorAll('.qpanel'));
+    const prevBtn = document.getElementById('btnPrev');
+    const nextBtn = document.getElementById('btnNext');
+    const submitBtn = document.getElementById('btnSubmit');
+    const stepBadge = document.getElementById('quizStepBadge');
+    const progressBar = document.getElementById('quizProgressBar');
+    const tagButtons = document.querySelectorAll('.tag-btn');
+
+    if (!panels.length) return;
+    let idx = 0;
+
+    function currentIsMulti() { return panels[idx].dataset.multi === '1'; }
+    function currentIsRequired() { return panels[idx].dataset.required === '1'; }
+
+    function answered(i = idx) {
+      const inputs = panels[i].querySelectorAll('input[type="radio"], input[type="checkbox"]');
+      return Array.from(inputs).some(el => el.checked);
+    }
+
+    function selectionCount(i = idx) {
+      return panels[i].querySelectorAll('input:checked').length;
+    }
+
+    function computeProgressPct() {
+      const c = panels.filter((_, i) => answered(i)).length;
+      return Math.round((c / panels.length) * 100);
+    }
+
+    function updateProgress() {
+      const pct = computeProgressPct();
+      progressBar.style.width = pct + '%';
+      document.documentElement.style.setProperty('--quiz-progress', pct + '%');
+    }
+
+    function updateNav() {
+      prevBtn.disabled = (idx === 0);
+      const onLast = (idx === panels.length - 1);
+      if (currentIsMulti()) {
+        nextBtn.style.display = onLast ? 'none' : '';
+        submitBtn.style.display = onLast ? '' : 'none';
+        const count = selectionCount();
+        nextBtn.textContent = onLast ? 'Next →' : (count > 0 ? `Next → (${count} selected)` : 'Next →');
+        stepBadge.textContent = `Step ${idx + 1} of ${panels.length} • Multi-select`;
+      } else {
+        nextBtn.style.display = 'none';
+        submitBtn.style.display = onLast ? '' : 'none';
+        stepBadge.textContent = `Step ${idx + 1} of ${panels.length} • Single choice`;
+      }
+    }
+
+    function highlightActiveTag() {
+      tagButtons.forEach((btn, i) => {
+        btn.classList.toggle('tag-btn--active', i === idx);
+      });
+    }
+
+    function focusPanel(i) {
+      const legend = panels[i].querySelector('legend');
+      if (legend) {
+        legend.setAttribute('tabindex', '-1');
+        legend.focus({ preventScroll: true });
+        setTimeout(() => legend.removeAttribute('tabindex'), 0);
+      }
+    }
+
+    showPanel = function(i) {
+      panels.forEach((p, k) => p.setAttribute('aria-hidden', k === i ? 'false' : 'true'));
+      idx = i;
+      updateNav();
+      updateProgress();
+      focusPanel(idx);
+      highlightActiveTag();
+    }
+
+    function nudgeRequired(panelIndex = idx) {
+      panels[panelIndex].style.outline = '2px solid rgba(211,51,51,.25)';
+      setTimeout(() => panels[panelIndex].style.outline = 'none', 400);
+    }
+
+    function goNext() {
+      const onLast = (idx === panels.length - 1);
+      if (onLast) return;
+      if (currentIsRequired() && !answered()) {
+        nudgeRequired();
+        return;
+      }
+      showPanel(idx + 1);
+    }
+
+    function goPrev() {
+      if (idx > 0) showPanel(idx - 1);
+    }
+
+    // Click-to-select behavior on the whole choice row
+    panels.forEach((panel, k) => {
+      panel.addEventListener('click', (e) => {
+        const label = e.target.closest('label.choice__item');
+        if (!label || !panel.contains(label)) return;
+
+        const input = label.querySelector('input[type="radio"], input[type="checkbox"]');
+        if (!input) return;
+
+        e.preventDefault();
+        input.checked = input.type === 'radio' ? true : !input.checked;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+
+        if (input.type === 'radio') {
+          setTimeout(() => { if (k === idx) goNext(); }, 120);
+        }
+      });
+
+      panel.addEventListener('change', () => {
+        updateProgress();
+        if (panel.dataset.multi === '1') updateNav();
+      });
+
+      panel.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && panel.dataset.multi === '1') {
+          e.preventDefault(); goNext();
+        }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); goPrev(); }
+        if (e.key === 'ArrowRight') { e.preventDefault(); goNext(); }
+      });
+    });
+
+    prevBtn.addEventListener('click', goPrev);
+    nextBtn.addEventListener('click', goNext);
+
+    // Prevent jumping forward via tag if current required is unanswered (backward always allowed)
+    window.jumpToPanel = function(index) {
+      if (index < 0 || index >= panels.length) return;
+
+      const isForward = index > idx;
+      if (isForward) {
+        const isRequired = panels[idx].dataset.required === '1';
+        const hasAnswer = Array.from(panels[idx].querySelectorAll('input[type="radio"], input[type="checkbox"]'))
+                              .some(el => el.checked);
+        if (isRequired && !hasAnswer) {
+          nudgeRequired();
+          return;
+        }
+      }
+
+      showPanel(index);
+    };
+
+    // Block submit if any required question is unanswered. Jump to the first missing one.
+    form.addEventListener('submit', (e) => {
+      const firstUnanswered = panels.findIndex((p) => {
+        if (p.dataset.required !== '1') return false;
+        return !Array.from(p.querySelectorAll('input[type="radio"], input[type="checkbox"]')).some(el => el.checked);
+      });
+
+      if (firstUnanswered !== -1) {
+        e.preventDefault();
+        showPanel(firstUnanswered);
+        nudgeRequired(firstUnanswered);
+      }
+    });
+
+    showPanel(0);
+  })();
+</script>
+
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "configurator/base.html" %}
+{% block title %}Job not found{% endblock %}
+{% block content %}
+<div class="container">
+  <section class="section">
+    <h1 class="h1">Job not found</h1>
+    <p class="p">The job you’re looking for doesn’t exist or is closed.</p>
+    <p><a class="btn btn--outline" href="{% url 'configurator:career_list' %}">Back to Careers</a></p>
+  </section>
+</div>
+{% endblock %}

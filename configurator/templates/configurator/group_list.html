@@ -1,0 +1,102 @@
+{% extends "configurator/base.html" %}
+{% load static %}
+
+{% block title %}Electrolab — Product Family{% endblock %}
+{% block header_title %}Choose a Product Family{% endblock %}
+
+{% block content %}
+<section class="section">
+  <h1 class="h1" style="margin-bottom:10px;">Pick a category</h1>
+  <p class="p">Hover a card (or tap on mobile) to preview, then click <strong>Start</strong>.</p>
+
+  <!-- Horizontal carousel wrapper -->
+  <div class="group-carousel" data-carousel>
+    <!-- Prev -->
+    <button class="carousel-btn carousel-btn--prev" type="button" aria-label="Scroll left" hidden>
+      ‹
+    </button>
+
+    <!-- Scrollable track -->
+    <div class="group-track" data-track>
+      {% for g in groups_ctx %}
+        <div class="group-cell">
+          <div class="jelly-card"
+               style="{% if g.hero_url %}--bg: url('{{ g.hero_url }}');{% else %}--bg: linear-gradient(135deg,#0b0b0b,#222);{% endif %}">
+            <div class="jelly-card__bg"></div>
+            <div class="jelly-card__img"></div>
+            <div class="jelly-card__veil"></div>
+
+            <!-- Info that slides up -->
+            <div class="jelly-card__info">
+              <div class="jelly-card__name">{{ g.obj.name }}</div>
+              <div class="jelly-card__meta">
+                {{ g.items_count }} item{{ g.items_count|pluralize }}
+              </div>
+            </div>
+
+            <!-- Decorative connection dots (hidden until hover via CSS) -->
+            <div class="jelly-connections" aria-hidden="true">
+              <div class="jelly-conn"><div class="jelly-conn__dot"></div></div>
+              <div class="jelly-conn"><div class="jelly-conn__dot"></div></div>
+              <div class="jelly-conn"><div class="jelly-conn__dot"></div></div>
+            </div>
+
+            <!-- Primary action -->
+            <div class="jelly-card__actions">
+  <a class="btn jelly-card__cta"
+     href="{% url 'configurator:quiz' slug=g.obj.slug %}">
+    Start
+  </a>
+
+  <a class="btn jelly-card__cta"
+     href="{% url 'configurator:group_explore' slug=g.obj.slug %}">
+    Explore
+  </a>
+</div>
+
+
+            <!-- Footer with the animated curve -->
+            <div class="jelly-card__footer" aria-hidden="true">
+              <svg class="jelly-curve" viewBox="0 0 400 450" preserveAspectRatio="none">
+                <path id="p" d="M0,200 Q80,100 400,200 V150 H0 V50" transform="translate(0 300)" />
+                <rect id="dummyRect" x="0" y="0" height="450" width="400" fill="transparent" />
+                <!-- Hover in (bounce) -->
+                <animate xlink:href="#p" attributeName="d" to="M0,50 Q80,100 400,50 V150 H0 V50"
+                         fill="freeze" begin="dummyRect.mouseover" end="dummyRect.mouseout"
+                         dur="0.10s" id="bounce1" />
+                <animate xlink:href="#p" attributeName="d" to="M0,50 Q80,0 400,50 V150 H0 V50"
+                         fill="freeze" begin="bounce1.end" end="dummyRect.mouseout"
+                         dur="0.15s" id="bounce2" />
+                <animate xlink:href="#p" attributeName="d" to="M0,50 Q80,80 400,50 V150 H0 V50"
+                         fill="freeze" begin="bounce2.end" end="dummyRect.mouseout"
+                         dur="0.15s" id="bounce3" />
+                <animate xlink:href="#p" attributeName="d" to="M0,50 Q80,45 400,50 V150 H0 V50"
+                         fill="freeze" begin="bounce3.end" end="dummyRect.mouseout"
+                         dur="0.10s" id="bounce4" />
+                <animate xlink:href="#p" attributeName="d" to="M0,50 Q80,50 400,50 V150 H0 V50"
+                         fill="freeze" begin="bounce4.end" end="dummyRect.mouseout"
+                         dur="0.05s" id="bounce5" />
+                <!-- Hover out -->
+                <animate xlink:href="#p" attributeName="d" to="M0,200 Q80,100 400,200 V150 H0 V50"
+                         fill="freeze" begin="dummyRect.mouseout" dur="0.15s" id="bounceOut" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <p class="p">No groups available.</p>
+      {% endfor %}
+    </div>
+
+    <!-- Next -->
+    <button class="carousel-btn carousel-btn--next" type="button" aria-label="Scroll right" hidden>
+      ›
+    </button>
+  </div>
+</section>
+{% endblock %}
+
+{# If your base.html has a block for page-specific scripts, include the carousel JS here #}
+{% block extra_scripts %}
+  <script src="{% static 'group-carousel.js' %}"></script>
+{% endblock %}

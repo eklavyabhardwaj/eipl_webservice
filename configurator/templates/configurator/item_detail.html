@@ -1,0 +1,179 @@
+{% extends "configurator/base.html" %}
+{% load static %}
+
+{% block title %}Electrolab — {{ item.name }}{% endblock %}
+{% block header_title %}{{ group.name }} — {{ item.name }}{% endblock %}
+
+{% block content %}
+<section class="section result-section">
+  <div class="result-header">
+    <h1 class="h1">{{ item.name }}</h1>
+    <div class="result-header__actions">
+      <a class="btn btn--ghost" href="{% url 'configurator:group_explore' slug=group.slug %}">Back to {{ group.name }}</a>
+      <a class="btn" href="{% url 'configurator:quiz' slug=group.slug %}">Start</a>
+      <button class="btn" type="button" data-open-contact>Get quote</button>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert {% if message.tags %}alert--{{ message.tags }}{% endif %}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="rec-card row">
+    <!-- Left: Gallery + Features -->
+    <div class="rec-card__main">
+      {% with imgs=item.images.all %}
+        {% if imgs|length > 0 %}
+          <div class="gallery" data-gallery>
+            <div class="gallery__hero">
+              <div class="gallery__track" data-gallery-track aria-live="polite">
+                {% for img in imgs %}
+                  <div class="gallery__slide" data-gallery-slide>
+                    <img class="gallery__img"
+                         src="{{ img.image.url }}"
+                         alt="{{ img.alt_text|default:item.name }}">
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="gallery__dots" role="tablist" aria-label="Image selectors">
+              {% for img in imgs %}
+                <button type="button"
+                        class="gallery__dot"
+                        data-gallery-dot
+                        aria-current="{{ forloop.first|yesno:'true,false' }}"
+                        aria-label="Go to image {{ forloop.counter }}"></button>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% if item.features.all %}
+        <h2 class="h2">Features</h2>
+        <ul class="list">
+          {% for feat in item.features.all %}
+            <li>{{ feat.text }}</li>
+          {% endfor %}
+        </ul>
+        <div class="hr"></div>
+      {% endif %}
+    </div>
+
+    <!-- Right: Description, Docs, Specs -->
+    <aside class="rec-card__aside">
+      {% if item.description %}
+        <h2 class="h2">Description</h2>
+        <div class="p">{{ item.description|safe }}</div>
+        <div class="hr"></div>
+      {% endif %}
+
+      {% if item.documents.all %}
+        <h2 class="h2">Documentation</h2>
+        <ul class="list">
+          {% for doc in item.documents.all %}
+            <li>
+              <a href="{{ doc.file.url }}" target="_blank" rel="noopener">
+                📄 {{ doc.title|default:doc.file.name }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+        <div class="hr"></div>
+      {% endif %}
+
+      {% if item.specs.all %}
+        <h2 class="h2">Specifications</h2>
+        <dl class="specs">
+          {% for s in item.specs.all %}
+            <div class="specs__row{% if s.highlight %} specs__row--hi{% endif %}">
+              <dt class="specs__label">{{ s.label }}</dt>
+              <dd class="specs__value">
+                {{ s.value }}{% if s.unit %} <span class="specs__unit">{{ s.unit }}</span>{% endif %}
+              </dd>
+            </div>
+          {% endfor %}
+        </dl>
+      {% endif %}
+    </aside>
+  </div>
+</section>
+
+<!-- Contact / Get Quote Modal -->
+<div class="modal" id="contactModal" aria-modal="true" role="dialog" aria-labelledby="contactTitle" style="display:none;">
+  <div class="modal__backdrop" data-close-modal></div>
+  <div class="modal__dialog contact-dialog">
+    <div class="modal__header sticky">
+      <div class="modal__title" id="contactTitle">Your details</div>
+      <button class="modal__close" type="button" data-close-modal aria-label="Close">✕</button>
+    </div>
+
+    <div class="modal__body">
+      {% if contact_form and contact_form.errors %}
+        <div class="alert alert--error">Please correct the errors below.</div>
+      {% endif %}
+
+      <form method="post" class="contact-form">
+        {% csrf_token %}
+        <!-- No quiz/session data. Only the current item. -->
+        <input type="hidden" name="interested_item_id" value="{{ item.id }}">
+
+        <label class="label" for="id_name">Name</label>
+        <input id="id_name" class="input" name="name" value="{{ contact_form.name.value|default_if_none:'' }}" required>
+
+        <label class="label" for="id_phone">Phone number</label>
+        <input id="id_phone" class="input" name="phone" value="{{ contact_form.phone.value|default_if_none:'' }}" required>
+
+        <label class="label" for="id_email">Email</label>
+        <input id="id_email" class="input" type="email" name="email" value="{{ contact_form.email.value|default_if_none:'' }}" required>
+
+        <label class="label" for="id_designation">Designation (optional)</label>
+        <input id="id_designation" class="input" name="designation" value="{{ contact_form.designation.value|default_if_none:'' }}">
+
+        <label class="label" for="id_company">Company (optional)</label>
+        <input id="id_company" class="input" name="company" value="{{ contact_form.company.value|default_if_none:'' }}">
+
+        <div class="modal__actions sticky">
+          <button class="btn btn--ghost" type="button" data-close-modal>Cancel</button>
+          <button class="btn" type="submit">Send</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function(){
+  // Contact modal open/close
+  const modal = document.getElementById('contactModal');
+  const openBtn = document.querySelector('[data-open-contact]');
+  const closers = document.querySelectorAll('[data-close-modal]');
+
+  function openModal(e){
+    if (e) e.preventDefault();
+    modal.style.display = 'block';
+    document.documentElement.style.overflow = 'hidden';
+  }
+  function closeModal(e){
+    if (e) e.preventDefault();
+    modal.style.display = 'none';
+    document.documentElement.style.overflow = '';
+  }
+
+  if (openBtn) openBtn.addEventListener('click', openModal);
+  closers.forEach(el => el.addEventListener('click', closeModal));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.style.display === 'block') closeModal(e);
+  });
+
+  // If server sent back form errors, auto-open modal so user sees them
+  {% if contact_form and contact_form.errors %}
+    openModal();
+  {% endif %}
+})();
+</script>
+{% endblock %}

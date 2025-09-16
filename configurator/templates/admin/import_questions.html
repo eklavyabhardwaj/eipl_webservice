@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+  <h1>Import Questions</h1>
+  <p>
+    Download a CSV template:
+    <a href="{% url 'admin:configurator_question_template' %}">questions_import_template.csv</a>
+  </p>
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    <table>
+      {{ form.as_table }}
+    </table>
+    <p><input type="submit" value="Import" class="default"></p>
+  </form>
+{% endblock %}

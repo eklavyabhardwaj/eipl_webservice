@@ -1,0 +1,388 @@
+{% extends "configurator/base.html" %}
+{% block title %}Contact Us — {{ block.super }}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      crossorigin="anonymous" referrerpolicy="no-referrer"/>
+
+<style>
+/* ===== Contact page (scoped) ===== */
+.contactus-page { font-family: "Plus Jakarta Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+.contactus-page .container { width: min(1100px, 92vw); margin: 20px auto; }
+.contactus-page .heading { text-align:center; color:#0c2236; }
+.contactus-page .heading h1{ font-size: clamp(26px,4vw,42px); font-weight: 800; margin:0 0 6px; }
+.contactus-page .heading p { font-size: clamp(14px,2vw,18px); opacity:.9; margin:0 0 18px; }
+
+/* Card */
+.contact-box{
+  display:flex; gap:0;
+  background:#fff; border-radius:16px; overflow:hidden;
+  border:1px solid rgba(0,0,0,.08); box-shadow:0 10px 28px rgba(0,0,0,.08);
+}
+
+/* Left: form */
+.container-left{ flex: 3 1 0; padding: 22px; }
+.container-left h3{ font-size: 20px; color:#353535; margin:0 0 10px; }
+
+/* Right: reach us */
+.container-right{
+  flex: 2 1 0; padding: 22px; color:#fff;
+  background: rgb(20, 124, 107);
+  display:flex; flex-direction:column; gap:10px;
+}
+
+/* Inputs/grid */
+.contact-form .row{ display:flex; gap:12px; flex-wrap:wrap; }
+.contact-form .col{ flex:1 1 240px; }
+.contact-form label{ display:block; font-weight:700; margin:8px 0 6px; color:#353535 }
+.contact-form input[type="text"],
+.contact-form input[type="email"],
+.contact-form input[type="tel"],
+.contact-form textarea{
+  width:100%; padding:12px 14px; border-radius:10px;
+  border:1px solid #cfcfcf; background:#fff; color:#353535; font:inherit;
+}
+.contact-form textarea{ min-height:120px; resize:vertical; }
+
+/* Captcha */
+.captcha-row{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:6px; }
+.captcha-box{
+  display:flex; align-items:center; gap:10px;
+  border:1px solid #cfcfcf; border-radius:10px; padding:8px 10px; background:#fafafa;
+}
+#captchaCanvas{ width:150px; height:48px; display:block; }
+#refreshCaptcha{
+  padding:8px 12px; border-radius:8px; border:1px solid #cfcfcf; background:#fff; cursor:pointer;
+}
+.captcha-input{ flex:1 1 180px; min-width:160px; }
+.captcha-error{ color:#b00020; font-size: 14px; margin-top:6px; display:none; }
+
+/* Actions */
+.contact-form .actions{ margin-top:12px; }
+.contact-form .btn{
+  display:inline-block; border:0; cursor:pointer;
+  background:#000; color:#fff; font-weight:700; padding:12px 22px;
+  border-radius:999px; box-shadow:0 6px 14px rgba(0,0,0,.18); transition:filter .2s ease, transform .08s ease;
+}
+.contact-form .btn:hover{ filter:brightness(1.05); transform:translateY(-1px); }
+.contact-form .btn:active{ transform:translateY(0); }
+
+/* Right column details */
+.container-right h3{ margin:0 0 8px; }
+
+/* Table with safe wrapping */
+.container-right table{ width:100%; border-collapse:collapse; table-layout: fixed; }
+.container-right td{
+  padding:6px 0; vertical-align:top;
+  word-break: break-word; overflow-wrap: break-word; white-space: normal;
+}
+.container-right td:first-child{ font-weight:700; padding-right:10px; width: 28%; }
+.container-right td a{
+  display:inline-block; max-width:100%; overflow-wrap: break-word; color:inherit; text-decoration: underline;
+}
+
+/* Map */
+.container-right .map iframe{ width:100%; height:260px; border:0; border-radius:10px; }
+
+/* Socials */
+.social-icons{ margin-top: 6px; display:flex; gap:14px; flex-wrap:wrap; }
+.social-icons a{ color:#fff; font-size:22px; opacity:.95; }
+.social-icons a:hover{ opacity:1; }
+
+/* ---------- Small screens ---------- */
+@media (max-width: 980px){
+  .contact-box{ flex-direction:column; border-radius:14px; }
+  .container-left, .container-right { padding:18px; }
+  .contact-form .row{ gap:10px; }
+  .contact-form .btn{ width:100%; text-align:center; }
+  .container-right .map iframe{ height:220px; }
+}
+
+@media (max-width: 560px){
+  .contactus-page .container{ width:min(800px, 94vw); margin:16px auto; }
+  .contactus-page .heading h1{ font-size: clamp(24px,6vw,34px); }
+  .contactus-page .heading p{ font-size: clamp(13px,4vw,16px); }
+  .container-left, .container-right { padding:16px; }
+  .contact-form input, .contact-form textarea{ padding:10px 12px; }
+  .container-right .map iframe{ height:200px; }
+}
+
+/* ---------- Dark mode ---------- */
+@media (prefers-color-scheme: dark){
+  .contactus-page .heading{ color:#ffffff; }
+  .contactus-page .heading p{ color: #e6f2f2; opacity: .9; }
+
+  .contact-box{
+    background: linear-gradient(180deg,#11181f,#0f151b);
+    border-color: rgba(255,255,255,.10);
+    box-shadow: 0 18px 44px rgba(0,0,0,.45);
+  }
+
+  .container-left h3{ color:#e9f0f3; }
+  .contact-form label{ color:#dfe9ed; }
+  .contact-form input[type="text"],
+  .contact-form input[type="email"],
+  .contact-form input[type="tel"],
+  .contact-form textarea{
+    background:#0f151b; color:#e9f0f3; border-color:#28313a;
+  }
+  .contact-form input::placeholder,
+  .contact-form textarea::placeholder{ color:#91a0ad; }
+
+  .contact-form .btn{ background:#00a3a3; color:#001515; }
+  .container-right{ color:#ffffff; }
+  .container-right td{ color:#f4f9f9; }
+  .container-right td a{ color:#ffffff; }
+  .social-icons a{ color:#ffffff; }
+}
+
+/* Phone-only: hide right sidebar */
+@media (max-width: 720px){
+  .contact-box{ flex-direction: column; }
+  .container-right{ display: none; }
+  .container-left{ flex: 1 1 100%; padding: 16px; }
+}
+</style>
+
+<div class="contactus-page">
+  <div class="heading">
+    <h1>Contact Us</h1>
+    <p>Fill this form to reach our team — we’ll get back shortly.</p>
+  </div>
+
+  <div class="container">
+    <div class="contact-box">
+
+      <!-- Left: Django form -->
+      <div class="container-left">
+        <h3>Fill the Form*</h3>
+
+        <form method="post" novalidate class="contact-form form" id="contactForm">
+          {% csrf_token %}
+
+          <!-- === ERP Visitor Info: static defaults === -->
+          <input type="hidden" name="naming_series" value=".FY.EXPO.####">
+          <input type="hidden" name="source" value="Contact Us (Website Page)">
+          <input type="hidden" name="status" value="Open">
+
+          <!-- === ERP Visitor Info: hidden mirrors of existing fields === -->
+          <input type="hidden" name="contact_email_id" id="erp_contact_email_id">
+          <input type="hidden" name="contact_number" id="erp_contact_number">
+          <input type="hidden" name="remark" id="erp_remark">
+
+          <div class="row">
+            <div class="col">
+              <label for="{{ form.name.id_for_label }}">Name*</label>
+              {{ form.name }}
+              {% if form.name.errors %}<div class="field-error">{{ form.name.errors|join:", " }}</div>{% endif %}
+            </div>
+
+            <div class="col">
+              <label for="{{ form.phone.id_for_label }}">Phone</label>
+              {{ form.phone }}
+              {% if form.phone.errors %}<div class="field-error">{{ form.phone.errors|join:", " }}</div>{% endif %}
+            </div>
+
+            <div class="col" style="flex-basis:100%">
+              <label for="{{ form.email.id_for_label }}">Email*</label>
+              {{ form.email }}
+              {% if form.email.errors %}<div class="field-error">{{ form.email.errors|join:", " }}</div>{% endif %}
+            </div>
+
+            <!-- === NEW (visible): Company Name and Territory/State === -->
+            <div class="col" style="flex-basis:100%">
+              <label for="id_contact_person">Company Name*</label>
+              <input type="text" id="id_contact_person" name="contact_person" placeholder="Your company" required>
+            </div>
+
+            <div class="col" style="flex-basis:100%">
+              <label for="id_state">Territory / State*</label>
+              <input type="text" id="id_state" name="state" placeholder="e.g., Maharashtra" required>
+            </div>
+
+            <div class="col" style="flex-basis:100%">
+              <label for="{{ form.subject.id_for_label }}">Subject</label>
+              {{ form.subject }}
+              {% if form.subject.errors %}<div class="field-error">{{ form.subject.errors|join:", " }}</div>{% endif %}
+            </div>
+
+            <div class="col" style="flex-basis:100%">
+              <label for="{{ form.message.id_for_label }}">Requirement / Message*</label>
+              {{ form.message }}
+              {% if form.message.errors %}<div class="field-error">{{ form.message.errors|join:", " }}</div>{% endif %}
+            </div>
+          </div>
+
+          <!-- === CAPTCHA === -->
+          <div class="row">
+            <div class="col" style="flex-basis:100%">
+              <label for="captchaInput">CAPTCHA*</label>
+              <div class="captcha-row">
+                <div class="captcha-box">
+                  <canvas id="captchaCanvas" width="150" height="48" aria-hidden="true"></canvas>
+                  <button type="button" id="refreshCaptcha" title="Refresh CAPTCHA" aria-label="Refresh CAPTCHA">
+                    <i class="fa-solid fa-rotate-right"></i>
+                  </button>
+                </div>
+                <input class="captcha-input" type="text" id="captchaInput" placeholder="Enter the code shown" required autocomplete="off" inputmode="latin">
+              </div>
+              <div id="captchaError" class="captcha-error">Incorrect code. Please try again.</div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="btn">Send Message</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Right: reach us + map + socials -->
+      <aside class="container-right">
+        <h3>Reach Us</h3>
+        <table>
+          <tr>
+            <td>Email:</td>
+            <td>
+              <a href="mailto:sales@electrolabgroup.com">sales@electrolabgroup.com</a><br/>
+              <a href="mailto:marketing@electrolabgroup.com">marketing@electrolabgroup.com</a>
+            </td>
+          </tr>
+          <tr>
+            <td>Phone:</td>
+            <td><a href="tel:+919167930377">+91 9167930377</a></td>
+          </tr>
+          <tr>
+            <td>Address:</td>
+            <td>
+              EL-23/24, T.T.C., Electronic Zone,<br/>
+              M.I.D.C., Mahape, Navi Mumbai,<br/>
+              400710, India
+            </td>
+          </tr>
+        </table>
+
+        <div class="map">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2339.078894702379!2d73.02420971664436!3d19.10695703077001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c0ec55354d51%3A0x2b6a57849c4ad2d1!2sElectrolab%20India%20Pvt%20Ltd%20(R%20%26%20D%20Center)%20%7C%20Lab%20Equipment%20Manufacturer%20%7C%20Lab%20Equipment%20Supplier%20%7C%20Lab%20Analytical%20Instrument!5e1!3m2!1sen!2sin!4v1744006771501!5m2!1sen!2sin"
+            loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+        </div>
+
+        <div class="social-icons" aria-label="Social links">
+          <a href="https://www.facebook.com/electrolabgroup" target="_blank" rel="noopener" aria-label="Facebook"><i class="fa-brands fa-facebook"></i></a>
+          <a href="https://www.instagram.com/electrolab_india/" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="https://wa.me/919167930377" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+          <a href="https://www.linkedin.com/company/electrolab-group" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</div>
+
+<!-- === Sync hidden ERP fields + CAPTCHA logic === -->
+<script>
+(function () {
+  const byId = (id) => document.getElementById(id);
+
+  // Django inputs (ids come from id_for_label)
+  const emailInput   = byId("{{ form.email.id_for_label }}");
+  const phoneInput   = byId("{{ form.phone.id_for_label }}");
+  const messageInput = byId("{{ form.message.id_for_label }}");
+
+  // Hidden ERP mirrors
+  const erpEmail  = byId("erp_contact_email_id");
+  const erpPhone  = byId("erp_contact_number");
+  const erpRemark = byId("erp_remark");
+
+  function syncERPFields() {
+    if (emailInput && erpEmail)   erpEmail.value  = emailInput.value || "";
+    if (phoneInput && erpPhone)   erpPhone.value  = phoneInput.value || "";
+    if (messageInput && erpRemark) erpRemark.value = messageInput.value || "";
+  }
+  ["input","change","blur","keyup"].forEach(evt => {
+    if (emailInput)   emailInput.addEventListener(evt, syncERPFields);
+    if (phoneInput)   phoneInput.addEventListener(evt, syncERPFields);
+    if (messageInput) messageInput.addEventListener(evt, syncERPFields);
+  });
+  syncERPFields();
+
+  // --- CAPTCHA ---
+  const canvas = byId("captchaCanvas");
+  const ctx = canvas.getContext("2d");
+  const input = byId("captchaInput");
+  const refreshBtn = byId("refreshCaptcha");
+  const errorBox = byId("captchaError");
+  const form = byId("contactForm");
+
+  let code = "";
+
+  function randomCode(len) {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no confusing O/0/I/1
+    let s = "";
+    for (let i = 0; i < len; i++) s += chars[Math.floor(Math.random() * chars.length)];
+    return s;
+  }
+
+  function drawNoise(w, h) {
+    for (let i = 0; i < 15; i++) {
+      ctx.beginPath();
+      ctx.moveTo(Math.random()*w, Math.random()*h);
+      ctx.lineTo(Math.random()*w, Math.random()*h);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgba(0,0,0,0.15)";
+      ctx.stroke();
+    }
+    for (let i = 0; i < 40; i++) {
+      ctx.fillStyle = "rgba(0,0,0,0.2)";
+      ctx.fillRect(Math.random()*w, Math.random()*h, 1, 1);
+    }
+  }
+
+  function renderCaptcha() {
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = "#f2f3f5";
+    ctx.fillRect(0, 0, w, h);
+    drawNoise(w, h);
+    ctx.font = "700 28px monospace";
+    ctx.textBaseline = "middle";
+    ctx.save();
+    // Draw each char slightly rotated/jittered
+    const spacing = w / (code.length + 1);
+    for (let i = 0; i < code.length; i++) {
+      const x = spacing * (i + 1);
+      const y = h / 2 + (Math.random() * 6 - 3);
+      const rot = (Math.random() * 0.3 - 0.15);
+      ctx.translate(x, y);
+      ctx.rotate(rot);
+      ctx.fillStyle = "#222";
+      ctx.fillText(code[i], -8, 0);
+      ctx.rotate(-rot);
+      ctx.translate(-x, -y);
+    }
+    ctx.restore();
+  }
+
+  function resetCaptcha() {
+    code = randomCode(6);
+    input.value = "";
+    errorBox.style.display = "none";
+    renderCaptcha();
+  }
+
+  refreshBtn.addEventListener("click", resetCaptcha);
+  resetCaptcha();
+
+  form.addEventListener("submit", function (e) {
+    syncERPFields();
+    if (!input.value || input.value.trim().toUpperCase() !== code) {
+      e.preventDefault();
+      errorBox.style.display = "block";
+      resetCaptcha();
+      input.focus();
+    }
+  });
+})();
+</script>
+{% endblock %}

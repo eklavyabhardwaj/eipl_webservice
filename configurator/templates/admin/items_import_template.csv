@@ -1,0 +1,4 @@
+group_name,item_name,item_code,description,is_active,features
+Laptops,ProBook 14,LPB-014,Lightweight business laptop,true,14-inch display;Intel i5;8GB RAM;512GB SSD;Backlit keyboard
+Laptops,UltraSlim 13,ULS-013,Thin-and-light ultraportable,1,13.3-inch display;Intel i7;16GB RAM;1TB SSD;Thunderbolt 4
+Desktops,Workstation X,WSX-001,High-performance desktop workstation,true,Ryzen 9;64GB RAM;RTX 4070;2TB NVMe;ECC support

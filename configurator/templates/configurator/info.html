@@ -1,0 +1,59 @@
+{% extends "configurator/base.html" %}
+
+{% block title %}Electrolab — {{ group.name }} · Your Details{% endblock %}
+{% block header_title %}{{ group.name }} — Your Details{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <p>Please share your details to see the recommendation.</p>
+
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="phase" value="info">
+
+      {# carry the selected choices from the previous step #}
+      {% for ch in choices %}
+        <input type="hidden" name="choices" value="{{ ch.id }}">
+      {% endfor %}
+
+      <fieldset>
+        <legend>Contact</legend>
+        <div style="display:grid; gap:10px;">
+          <label>Full name<br>
+            <input type="text" name="name" value="{{ info_form.data.name|default_if_none:'' }}" required>
+          </label>
+          <label>Email<br>
+            <input type="email" name="email" value="{{ info_form.data.email|default_if_none:'' }}" required>
+          </label>
+          <label>Phone number<br>
+            <input type="text" name="phone" value="{{ info_form.data.phone|default_if_none:'' }}" required>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset style="margin-top:12px;">
+        <legend>Optional</legend>
+        <div style="display:grid; gap:10px;">
+          <label>Designation (optional)<br>
+            <input type="text" name="designation" value="{{ info_form.data.designation|default_if_none:'' }}">
+          </label>
+          <label>Company (optional)<br>
+            <input type="text" name="company" value="{{ info_form.data.company|default_if_none:'' }}">
+          </label>
+        </div>
+      </fieldset>
+
+      {# show form errors (simple) #}
+      {% if info_form.errors %}
+        <div style="color:#b00020; margin-top:8px;">
+          Please correct the highlighted fields.
+        </div>
+      {% endif %}
+
+      <div style="margin-top:12px;">
+        <button class="btn" type="submit">See my result</button>
+        <a class="btn" style="background:#4d8080; margin-left:8px;" href="{% url 'configurator:quiz' slug=group.slug %}">Back to quiz</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

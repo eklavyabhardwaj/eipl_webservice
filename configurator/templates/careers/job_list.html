@@ -1,0 +1,56 @@
+{% extends "configurator/base.html" %}
+{% block title %}Careers — Open Positions{% endblock %}
+{% block content %}
+<div class="container">
+  <section class="section">
+    <h1 class="h1">Careers</h1>
+
+    <form method="get" class="form" aria-label="Filter jobs">
+      <div class="career-filters">
+        <input class="input" type="text" name="search" placeholder="Search roles…" value="{{ search }}">
+        <select class="input" name="qualification">
+          <option value="">All Designations</option>
+          {% for q in qualification_options %}
+            <option value="{{ q }}" {% if q == qualification %}selected{% endif %}>{{ q }}</option>
+          {% endfor %}
+        </select>
+        <select class="input" name="location">
+          <option value="">All Locations</option>
+          {% for loc in locations %}
+            <option value="{{ loc }}" {% if loc == location %}selected{% endif %}>{{ loc }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn" type="submit">Filter</button>
+      </div>
+    </form>
+
+    {% if jobs %}
+<div class="career-grid">
+  {% for job in jobs %}
+    <article class="career-card">
+      <header class="career-card__header">
+        <h3 class="career-card__title">{{ job.designation }}</h3>
+        <span class="career-card__company">{{ job.name }}</span>
+      </header>
+      <div class="career-card__body">
+        <p class="career-card__meta">
+          <strong>Location:</strong> {{ job.territory }}
+          {% if job.qualification %}<br><strong>Qualification:</strong> {{ job.qualification }}{% endif %}
+        </p>
+      </div>
+      <footer class="career-card__footer">
+        <a class="btn btn--outline btn--sm" href="{% url 'configurator:career_detail' job.name %}">Details</a>
+        <a class="btn btn--sm" href="{% url 'configurator:career_apply' %}?job_title={{ job.name|urlencode }}&designation={{ job.designation|urlencode }}">Apply</a>
+      </footer>
+    </article>
+  {% empty %}
+    <p class="p">No open positions found.</p>
+  {% endfor %}
+</div>
+
+    {% else %}
+      <p class="p">No open positions found.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

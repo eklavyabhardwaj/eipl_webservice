@@ -1,0 +1,57 @@
+{# templates/partials/_contact_modal.html #}
+<div class="modal" id="contactModal" aria-modal="true" role="dialog" aria-labelledby="contactTitle" aria-describedby="contactDesc" style="display:none;">
+  <div class="modal__backdrop" data-close-modal></div>
+
+  <div class="modal__dialog contact-dialog">
+    <div class="modal__header">
+      <div class="modal__title" id="contactTitle">Your details</div>
+      <button class="modal__close" type="button" data-close-modal aria-label="Close">✕</button>
+    </div>
+
+    <form method="post" class="contact-form" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="step" value="contact">
+      {% if session %}<input type="hidden" name="session_id" value="{{ session.id }}">{% endif %}
+
+      <div id="contactDesc" class="visually-hidden">Provide your contact info to request a quote.</div>
+
+      <div class="modal__body">
+        {% if recommended_items|length > 1 %}
+          <p class="p">Which recommended product(s) would you like a quote for?</p>
+          <div class="contact-form__choices">
+            {% for it in recommended_items %}
+              <label class="choice__item">
+                <input type="checkbox" name="interested_items" value="{{ it.id }}">
+                <span>{{ it.name }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        {% else %}
+          {% if recommended_item %}
+            <input type="hidden" name="interested_items" value="{{ recommended_item.id }}">
+          {% endif %}
+        {% endif %}
+
+        <label class="label" for="id_name">Name</label>
+        <input id="id_name" class="input" name="name" value="{{ form.name.value|default_if_none:'' }}" required>
+
+        <label class="label" for="id_phone">Phone number</label>
+        <input id="id_phone" class="input" name="phone" value="{{ form.phone.value|default_if_none:'' }}" required>
+
+        <label class="label" for="id_email">Email</label>
+        <input id="id_email" class="input" type="email" name="email" value="{{ form.email.value|default_if_none:'' }}" required>
+
+        <label class="label" for="id_designation">Designation (optional)</label>
+        <input id="id_designation" class="input" name="designation" value="{{ form.designation.value|default_if_none:'' }}">
+
+        <label class="label" for="id_company">Company (optional)</label>
+        <input id="id_company" class="input" name="company" value="{{ form.company.value|default_if_none:'' }}">
+      </div>
+
+      <div class="modal__actions">
+        <button class="btn btn--ghost" type="button" data-close-modal>Cancel</button>
+        <button class="btn" type="submit">Send</button>
+      </div>
+    </form>
+  </div>
+</div>

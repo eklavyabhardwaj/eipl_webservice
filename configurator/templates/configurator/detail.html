@@ -1,0 +1,34 @@
+{% extends "configurator/base.html" %}
+{% load static %}
+
+{% block title %}{{ page.title }} — Electrolab{% endblock %}
+
+{% block extra_head %}
+  {% if page.custom_css %}
+    <style>
+      {{ page.custom_css|safe }}
+    </style>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  {% if page.show_hero and page.hero_image %}
+    <section class="hero" style="margin-bottom:1.5rem">
+      <img src="{{ page.hero_image.url }}" alt="{{ page.hero_alt|default:page.title }}"
+           style="width:100%;height:auto;border-radius:12px;object-fit:cover;">
+      {% if page.hero_caption %}
+        <p class="hero__caption" style="color:#6b7280;margin-top:.5rem">{{ page.hero_caption }}</p>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  <article class="page-body">
+    {{ page.body|safe }}
+  </article>
+
+  {% if page.footer_html %}
+    <footer class="page-footer" style="margin-top:2rem;padding-top:1rem;border-top:1px solid #eee;">
+      {{ page.footer_html|safe }}
+    </footer>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,243 @@
+{% extends "configurator/base.html" %}
+{% block title %}Electrolab — {{ group.name }} · Result{% endblock %}
+{% block header_title %}{{ group.name }} — Result{% endblock %}
+
+{% block content %}
+<section class="section result-section">
+  <!-- Header -->
+  <div class="result-header">
+    <h1 class="h1">Recommended</h1>
+
+    <div class="result-header__actions">
+<!--      <a class="btn btn&#45;&#45;ghost" href="{% url 'configurator:quiz' slug=group.slug %}">Try again</a>-->
+<!--      <a class="btn btn&#45;&#45;ghost" href="{% url 'configurator:group_list' %}">Other groups</a>-->
+      <a class="btn" href="{% url 'configurator:quiz' slug=group.slug %}">Try again</a>
+      <a class="btn" href="{% url 'configurator:group_list' %}">Other groups</a>
+
+      <button class="btn" type="button" data-open-contact>Get quote</button>
+    </div>
+
+    <span class="result-header__count" style="color:#0b6b70;">
+      {{ recommended_items|length }} product{{ recommended_items|length|pluralize }} matched
+    </span>
+  </div>
+
+  {% if recommended_items %}
+    <!-- Vertical stack of recommended products -->
+    <div id="recStack" class="rec-stack" aria-live="polite">
+      <div id="recTrack" class="rec-track">
+        {% for it in recommended_items %}
+          <div class="rec-card row">
+            <!-- Left: Gallery + Title -->
+            <div class="rec-card__main">
+              <div class="rec-card__title">{{ it.name }}</div>
+
+              {% with imgs=it.images.all %}
+                {% if imgs|length > 0 %}
+                  <div class="gallery" data-gallery>
+                    <div class="gallery__hero">
+                      <div class="gallery__track" data-gallery-track aria-live="polite">
+                        {% for img in imgs %}
+                          <div class="gallery__slide" data-gallery-slide>
+                            <img class="gallery__img"
+                                 src="{{ img.image.url }}"
+                                 alt="{{ img.alt_text|default:it.name }}">
+                          </div>
+                        {% endfor %}
+                      </div>
+                    </div>
+                    <div class="gallery__dots" role="tablist" aria-label="Image selectors">
+                      {% for img in imgs %}
+                        <button type="button"
+                                class="gallery__dot"
+                                data-gallery-dot
+                                aria-current="{{ forloop.first|yesno:'true,false' }}"
+                                aria-label="Go to image {{ forloop.counter }}"></button>
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% endif %}
+              {% endwith %}
+
+              {% if it.features.all %}
+    <h2 class="h2">Features</h2>
+    <ul class="list">
+      {% for feat in it.features.all %}
+        <li>{{ feat.text }}</li>
+      {% endfor %}
+    </ul>
+    <div class="hr"></div>
+  {% endif %}
+            </div>
+
+            <!-- Right: Description, Docs, Specs -->
+            <aside class="rec-card__aside">
+
+
+              {% if it.description %}
+            <h2 class="h2">Description</h2>
+            <div class="p">{{ it.description|safe }}</div>
+            <div class="hr"></div>
+              {% endif %}
+
+
+              {% if it.documents.all %}
+                <h2 class="h2">Documentation</h2>
+                <ul class="list">
+                  {% for doc in it.documents.all %}
+                    <li>
+                      <a href="{{ doc.file.url }}" target="_blank" rel="noopener">
+                        📄 {{ doc.title|default:doc.file.name }}
+                      </a>
+                    </li>
+                  {% endfor %}
+                </ul>
+                <div class="hr"></div>
+              {% endif %}
+
+              {% if it.specs.all %}
+                <h2 class="h2">Specifications</h2>
+                <dl class="specs">
+                  {% for s in it.specs.all %}
+                    <div class="specs__row{% if s.highlight %} specs__row--hi{% endif %}">
+                      <dt class="specs__label">{{ s.label }}</dt>
+                      <dd class="specs__value">
+                        {{ s.value }}{% if s.unit %} <span class="specs__unit">{{ s.unit }}</span>{% endif %}
+                      </dd>
+                    </div>
+                  {% endfor %}
+                </dl>
+              {% endif %}
+
+            </aside>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% else %}
+    <p class="p">No recommendation could be computed. Please try again or contact support.</p>
+  {% endif %}
+</section>
+
+<!-- Family items -->
+{% if family_items %}
+<section class="section family-section">
+  <h2 class="h2">Other products in {{ group.name }}</h2>
+  <div class="group-grid">
+    {% for it in family_items %}
+      <div class="jelly-card"
+           style="--bg: {% if it.images.all|length > 0 %}url('{{ it.images.all.0.image.url }}'){% else %}linear-gradient(135deg,#0b0b0b,#222){% endif %};">
+        <div class="jelly-card__bg"></div>
+        <div class="jelly-card__img"></div>
+        <div class="jelly-card__veil"></div>
+        <div class="jelly-card__info">
+          <div class="jelly-card__name">{{ it.name }}</div>
+          {% if it.description %}
+  <div class="jelly-card__meta">{{ it.description|truncatechars_html:110|safe }}</div>
+{% endif %}
+
+        </div>
+        <div class="jelly-card__footer" aria-hidden="true">
+          <svg class="jelly-curve" viewBox="0 0 400 450" preserveAspectRatio="none">
+            <path d="M0,200 Q80,100 400,200 V150 H0 V50" transform="translate(0 300)"/>
+          </svg>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- Contact Modal -->
+<div class="modal" id="contactModal" aria-modal="true" role="dialog" aria-labelledby="contactTitle" style="display:none;">
+  <div class="modal__backdrop" data-close-modal></div>
+  <div class="modal__dialog contact-dialog">
+    <div class="modal__header sticky">
+      <div class="modal__title" id="contactTitle">Your details</div>
+      <button class="modal__close" type="button" data-close-modal aria-label="Close">✕</button>
+    </div>
+
+    <div class="modal__body">
+      <form method="post" class="contact-form">
+        {% csrf_token %}
+        <input type="hidden" name="step" value="contact">
+        {% if session %}<input type="hidden" name="session_id" value="{{ session.id }}">{% endif %}
+
+        {% if recommended_items|length > 1 %}
+          <div class="p">Which product(s) would you like a quote for?</div>
+          <div class="contact-form__choices">
+            {% for it in recommended_items %}
+              <label class="choice__item">
+                <input type="checkbox" name="interested_items" value="{{ it.id }}">
+                <span>{{ it.name }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        {% else %}
+          <input type="hidden" name="interested_items"
+                 value="{% if recommended_item %}{{ recommended_item.id }}{% else %}{{ recommended_items.0.id }}{% endif %}">
+        {% endif %}
+
+        <label class="label" for="id_name">Name</label>
+        <input id="id_name" class="input" name="name" required>
+
+        <label class="label" for="id_phone">Phone number</label>
+        <input id="id_phone" class="input" name="phone" required>
+
+        <label class="label" for="id_email">Email</label>
+        <input id="id_email" class="input" type="email" name="email" required>
+
+        <label class="label" for="id_designation">Designation (optional)</label>
+        <input id="id_designation" class="input" name="designation">
+
+        <label class="label" for="id_company">Company (optional)</label>
+        <input id="id_company" class="input" name="company">
+
+        <div class="modal__actions sticky">
+          <button class="btn btn--ghost" type="button" data-close-modal>Cancel</button>
+          <button class="btn" type="submit">Send</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // (Optional) Recalculate vertical offset if you add programmatic paging later
+  const track = document.getElementById('recTrack');
+  if (track){
+    const slides = Array.from(track.children);
+    let idx = 0;
+    function go(i){
+      idx = Math.max(0, Math.min(i, slides.length - 1));
+      const y = slides.slice(0, idx).reduce((acc, el) => acc + el.offsetHeight, 0);
+      track.style.transform = `translateY(-${y}px)`;
+    }
+    window.addEventListener('resize', () => go(idx));
+  }
+
+  // Contact modal open/close (no navigation)
+  const modal = document.getElementById('contactModal');
+  const openBtn = document.querySelector('[data-open-contact]');
+  const closers = document.querySelectorAll('[data-close-modal]');
+
+  function openModal(e){
+    if (e) e.preventDefault();
+    modal.style.display = 'block';
+    document.documentElement.style.overflow = 'hidden'; // lock bg scroll
+  }
+  function closeModal(e){
+    if (e) e.preventDefault();
+    modal.style.display = 'none';
+    document.documentElement.style.overflow = '';
+  }
+
+  if (openBtn) openBtn.addEventListener('click', openModal);
+  closers.forEach(el => el.addEventListener('click', closeModal));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.style.display === 'block') closeModal(e);
+  });
+})();
+</script>
+{% endblock %}

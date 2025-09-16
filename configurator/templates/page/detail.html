@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+  {% if page.show_hero and page.hero_image %}
+    <section class="relative">
+      <img src="{{ page.hero_image.url }}" alt="{{ page.hero_alt|default:page.title }}" class="w-full h-72 object-cover">
+      {% if page.hero_caption %}
+        <div class="absolute inset-0 flex items-end">
+          <div class="bg-black/50 text-white p-4 w-full">
+            <h1 class="text-2xl font-semibold">{{ page.hero_caption }}</h1>
+          </div>
+        </div>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  <main class="max-w-5xl mx-auto px-4 py-8 prose">
+    <h1 class="mb-4">{{ page.title }}</h1>
+    {{ page.body|safe }}
+  </main>
+
+  {% if page.footer_html %}
+    <footer class="border-t mt-12">
+      <div class="max-w-5xl mx-auto px-4 py-6 text-sm">
+        {{ page.footer_html|safe }}
+      </div>
+    </footer>
+  {% endif %}
+
+{% endblock %}

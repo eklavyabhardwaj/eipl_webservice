@@ -1,0 +1,52 @@
+{% extends "configurator/base.html" %}
+{% load static %}
+
+{% block title %}Electrolab — {{ group.name }} · Explore{% endblock %}
+{% block header_title %}{{ group.name }} — Explore{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="result-header" style="margin-bottom:12px;">
+    <h1 class="h1">{{ group.name }} — All items</h1>
+    <div class="result-header__actions">
+      <a class="btn" href="{% url 'configurator:quiz' slug=group.slug %}">Start</a>
+      <a class="btn btn--ghost" href="{% url 'configurator:group_list' %}">Back to families</a>
+    </div>
+  </div>
+
+  {% if items %}
+    <div class="group-grid">
+      {% for it in items %}
+        <div class="jelly-card"
+             style="--bg: {% if it.images.all|length > 0 %}url('{{ it.images.all.0.image.url }}'){% else %}linear-gradient(135deg,#0b0b0b,#222){% endif %};">
+          <div class="jelly-card__bg"></div>
+          <div class="jelly-card__img"></div>
+          <div class="jelly-card__veil"></div>
+          <div class="jelly-card__info">
+            <div class="jelly-card__name">{{ it.name }}</div>
+            {% if it.description %}
+              <div class="jelly-card__meta">{{ it.description|truncatechars_html:110|safe }}</div>
+            {% endif %}
+          </div>
+          <div class="jelly-card__footer" aria-hidden="true">
+            <svg class="jelly-curve" viewBox="0 0 400 450" preserveAspectRatio="none">
+              <path d="M0,200 Q80,100 400,200 V150 H0 V50" transform="translate(0 300)"/>
+            </svg>
+          </div>
+
+          <!-- View button -->
+          <!-- View button (use actions row so it sits above the curve/veil) -->
+<div class="jelly-card__actions jelly-card__actions--right">
+  <a class="btn jelly-card__cta" href="{% url 'configurator:item_detail' item_id=it.id %}">
+    View
+  </a>
+</div>
+
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="p">No items found in this group.</p>
+  {% endif %}
+</section>
+{% endblock %}

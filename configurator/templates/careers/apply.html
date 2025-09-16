@@ -1,0 +1,330 @@
+{% extends "configurator/base.html" %}
+{% block title %}Apply — Careers{% endblock %}
+{% block content %}
+<div class="container apply-scope">
+  <style>
+    /* ===== Scoped to this page only ===== */
+
+    /* 0) Prevent horizontal scroll on tiny screens (scoped) */
+    .apply-scope{ overflow-x: hidden; }
+
+    /* 1) Card look + hover */
+    .apply-scope .career-card{
+      background: linear-gradient(180deg, var(--surface, #fff), var(--surface-2, #fbfdfe));
+      border: 1px solid var(--line, rgba(20,24,31,.12));
+      border-radius: var(--radius-sm, 12px);
+      padding: 22px;
+      box-shadow: var(--shadow-sm, 0 6px 18px rgba(0,0,0,.08));
+      transition: transform .08s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .apply-scope .career-card:hover{
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md, 0 14px 32px rgba(6,95,91,.14));
+      border-color: rgba(0,163,163,.28);
+    }
+    .apply-scope .career-card__header{ margin-bottom: 8px; }
+    .apply-scope .career-card__footer{
+      display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    }
+
+    /* 2) Grid */
+    .apply-scope .form{ display:block; }
+    .apply-scope .grid{
+      display:grid; grid-template-columns: 1fr 1fr; gap:12px;
+    }
+    .apply-scope .col-span-2{ grid-column: 1 / -1; }
+
+    /* 3) Inputs */
+    .apply-scope .form-field{ display:flex; flex-direction:column; }
+    .apply-scope .label{ font-weight:800; margin:10px 0 6px; color: var(--ink, #16181d); }
+    .apply-scope input[type="text"],
+    .apply-scope input[type="email"],
+    .apply-scope input[type="tel"],
+    .apply-scope input[type="url"],
+    .apply-scope input[type="number"],
+    .apply-scope select,
+    .apply-scope textarea{
+      width:100%; box-sizing:border-box;
+      padding:12px 14px; border-radius:12px;
+      border:1px solid var(--line, rgba(20,24,31,.12));
+      background:#fff; color:var(--ink, #16181d); font:inherit;
+      transition:border-color .15s ease, box-shadow .15s ease, transform .06s ease;
+    }
+    .apply-scope input:hover,
+    .apply-scope select:hover,
+    .apply-scope textarea:hover{ transform: translateY(-1px); }
+    .apply-scope input:focus,
+    .apply-scope select:focus,
+    .apply-scope textarea:focus{
+      outline:none; border-color: var(--accent, #00a3a3);
+      box-shadow: var(--focus-ring, 0 0 0 4px rgba(0,163,163,.24));
+    }
+    .apply-scope textarea{ min-height: 120px; }
+    .apply-scope .helptext{ color: var(--muted, #667085); font-size: 13px; }
+
+    /* 4) Inline range group */
+    .apply-scope .input-group{ display:flex; align-items:center; gap:8px; }
+    .apply-scope .input-group__sep{ font-weight:700; color: var(--muted, #667085); }
+
+    /* 5) File drop */
+    .apply-scope .file-drop{
+      border:2px dashed var(--line, rgba(20,24,31,.12));
+      border-radius: 12px;
+      padding: 18px; text-align:center; background: var(--surface-2, #fbfdfe);
+      color: var(--muted, #667085);
+      transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+      width: 100%;
+    }
+    .apply-scope .file-drop:hover{
+      border-color: var(--accent, #00a3a3);
+      background:#f7fbfb;
+      box-shadow: 0 8px 18px rgba(0,163,163,.10);
+    }
+    .apply-scope .file-drop__hint{ display:inline-block; margin-left:10px; font-size:14px; }
+    .apply-scope input[type="file"]{ max-width: 100%; }
+
+    /* 6) Messages */
+    .apply-scope .messages{ list-style:none; padding:0; margin: 10px 0; }
+    .apply-scope .msg{
+      padding:10px 14px; border-radius:12px; border:1px solid var(--line, rgba(20,24,31,.12));
+      background:#f6fbfb; color:#054846; box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .apply-scope .msg--success{
+      border-color: rgba(0,163,163,.35);
+      background: linear-gradient(180deg,#f0ffff,#e9fbfb);
+      color:#065f5b;
+    }
+    .apply-scope .msg--error{
+      border-color: rgba(218,55,55,.25);
+      background: linear-gradient(180deg,#fff5f5,#ffecec);
+      color:#8f1d1d;
+    }
+
+    /* 7) Buttons */
+    .apply-scope .btn{
+      appearance:none; border:0; cursor:pointer;
+      padding:12px 20px; border-radius:999px; font-weight:850; letter-spacing:.3px;
+      background: linear-gradient(180deg, var(--cta, #065f5b), var(--cta-active, #044846));
+      color: var(--cta-on, #fff);
+      box-shadow: var(--shadow-md, 0 14px 32px rgba(6,95,91,.14));
+      transition: transform .08s ease, filter .2s ease, box-shadow .2s ease;
+      text-decoration:none; display:inline-flex; align-items:center; justify-content:center;
+    }
+    .apply-scope .btn:hover{ filter:brightness(1.05); box-shadow: var(--shadow-lg, 0 28px 64px rgba(6,95,91,.16)); transform: translateY(-1px); }
+    .apply-scope .btn:active{ transform: translateY(0); filter:brightness(.98); }
+    .apply-scope .btn--outline{
+      background:transparent; color: var(--cta, #065f5b);
+      border:1px solid rgba(0,163,163,.35); box-shadow:none;
+    }
+    .apply-scope .btn--lg{ padding:14px 24px; font-size:17px; }
+
+    .apply-scope .errors{ color:#b00020; margin-top:10px; }
+
+    /* 8) Mobile fixes: gutters + grid collapse */
+    @media (max-width: 720px){
+      .apply-scope.container{ padding: 0 14px; }
+      .apply-scope .grid{ grid-template-columns: 1fr; }
+    }
+    @media (max-width: 420px){
+      .apply-scope .career-card{ padding: 16px; }
+    }
+
+    /* 9) Dark mode visibility (inputs & dropdown menu items) */
+    @media (prefers-color-scheme: dark){
+      .apply-scope .career-card{
+        background:#131a22; border-color: var(--line, rgba(255,255,255,.16));
+        box-shadow: 0 8px 28px rgba(0,0,0,.45);
+      }
+      .apply-scope input[type="text"],
+      .apply-scope input[type="email"],
+      .apply-scope input[type="tel"],
+      .apply-scope input[type="url"],
+      .apply-scope input[type="number"],
+      .apply-scope select,
+      .apply-scope textarea{
+        background:#0f141a; color:#e8eef5; border-color: var(--line, rgba(255,255,255,.16));
+        caret-color:#e8eef5;
+      }
+      .apply-scope input::placeholder{ color:#93a1ad; }
+      .apply-scope select option{
+        background:#0f141a; color:#e8eef5;
+      }
+      .apply-scope .file-drop{
+        background: linear-gradient(180deg,#11181f,#0f151b);
+        border-color: var(--line, rgba(255,255,255,.16));
+        color: var(--muted, #9aa6b2);
+      }
+    }
+
+    /* ===== APPLY (extra small-screen polish) ===== */
+@media (max-width: 560px){
+  /* tighter page gutters */
+  .apply-scope.container{ padding-left: 12px; padding-right: 12px; }
+
+  /* card spacing + headings */
+  .apply-scope .career-card{ padding: 16px; }
+  .apply-scope .career-card__header .h1{ font-size: 22px; line-height: 1.25; }
+  .apply-scope .career-card__header .p{ font-size: 14px; }
+
+  /* one-column grid (already set ≤720px, but harden for tiny screens) */
+  .apply-scope .grid{ grid-template-columns: 1fr; gap: 10px; }
+
+  /* bigger touch targets + avoid iOS zoom */
+  .apply-scope input[type="text"],
+  .apply-scope input[type="email"],
+  .apply-scope input[type="tel"],
+  .apply-scope input[type="url"],
+  .apply-scope input[type="number"],
+  .apply-scope select,
+  .apply-scope textarea{
+    min-height: 44px;
+    font-size: 16px; /* prevents iOS zoom on focus */
+  }
+
+  /* inline CTC group stacks nicely */
+  .apply-scope .input-group{
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .apply-scope .input-group__sep{ order: 2; }
+
+  /* file input: full width, comfy tap area */
+  .apply-scope .file-drop{ padding: 14px; }
+  .apply-scope input[type="file"]{
+    width: 100%;
+  }
+  /* style the native button a bit (supported in modern browsers) */
+  .apply-scope input[type="file"]::file-selector-button{
+    padding: 10px 12px; border-radius: 999px; border: 1px solid rgba(0,163,163,.35);
+    background: transparent; color: var(--cta, #065f5b);
+    font-weight: 750; cursor: pointer;
+  }
+
+  /* actions: full-width buttons, stacked */
+  .apply-scope .career-card__footer{
+    gap: 8px;
+  }
+  .apply-scope .career-card__footer .btn{
+    flex: 1 1 100%;
+    min-height: 46px;
+  }
+}
+
+/* ultra-narrow devices */
+@media (max-width: 380px){
+  .apply-scope .career-card{ padding: 14px; }
+  .apply-scope .label{ font-size: 14px; }
+  .apply-scope .helptext{ font-size: 12px; }
+  .apply-scope .messages .msg{ font-size: 14px; }
+}
+
+  </style>
+
+  <!-- Card wrapper -->
+  <article class="career-card">
+    <header class="career-card__header">
+      <h1 class="h1" style="margin:0;">Apply</h1>
+      <p class="p" style="margin-top:6px;">Tell us a bit about you. We’ll get back to you shortly.</p>
+    </header>
+
+    {% if messages %}
+      <ul class="messages" role="status" aria-live="polite">
+        {% for m in messages %}
+          <li class="msg msg--{{ m.tags }}">{{ m }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="form" novalidate>
+      {% csrf_token %}
+
+      <!-- 2-col responsive grid (collapses on small screens) -->
+      <div class="grid">
+        <!-- Name -->
+        <div class="form-field">
+          <label class="label" for="{{ form.applicant_name.id_for_label }}">Full name</label>
+          {{ form.applicant_name }}
+        </div>
+
+        <!-- Email -->
+        <div class="form-field">
+          <label class="label" for="{{ form.email_id.id_for_label }}">Email</label>
+          {{ form.email_id }}
+        </div>
+
+        <!-- Phone -->
+        <div class="form-field">
+          <label class="label" for="{{ form.phone_number.id_for_label }}">Phone</label>
+          {{ form.phone_number }}
+        </div>
+
+        <!-- Country -->
+        <div class="form-field">
+          <label class="label" for="{{ form.country.id_for_label }}">Country</label>
+          {{ form.country }}
+        </div>
+
+        <!-- Job title -->
+        <div class="form-field">
+          <label class="label" for="{{ form.job_title.id_for_label }}">Job Title</label>
+          {{ form.job_title }}
+        </div>
+
+        <!-- Designation -->
+        <div class="form-field">
+          <label class="label" for="{{ form.designation.id_for_label }}">Designation</label>
+          {{ form.designation }}
+        </div>
+
+        <!-- CTC range -->
+        <div class="form-field col-span-2">
+          <label class="label">Expected CTC (₹)</label>
+          <div class="input-group">
+            {{ form.lower_range }}
+            <span class="input-group__sep" aria-hidden="true">–</span>
+            {{ form.upper_range }}
+          </div>
+          <small class="helptext">Provide approximate range. You can leave blank if unsure.</small>
+        </div>
+
+        <!-- Cover letter -->
+        <div class="form-field col-span-2">
+          <label class="label" for="{{ form.cover_letter.id_for_label }}">Cover Letter</label>
+          {{ form.cover_letter }}
+        </div>
+
+        <!-- Source -->
+        <div class="form-field">
+          <label class="label" for="{{ form.source.id_for_label }}">How did you hear about us?</label>
+          {{ form.source }}
+        </div>
+
+        <!-- Resume link -->
+        <div class="form-field">
+          <label class="label" for="{{ form.resume_link.id_for_label }}">Resume Link (optional)</label>
+          {{ form.resume_link }}
+        </div>
+
+        <!-- Resume upload -->
+        <div class="form-field col-span-2">
+          <label class="label" for="{{ form.resume_attachment.id_for_label }}">Upload Resume (PDF)</label>
+          <div class="file-drop">
+            {{ form.resume_attachment }}
+            <span class="file-drop__hint">Drag &amp; drop or click • PDF up to 8MB</span>
+          </div>
+        </div>
+      </div>
+
+      {% if form.errors %}
+        <div class="errors" role="alert">Please fix the errors above.</div>
+      {% endif %}
+
+      <!-- Actions -->
+      <footer class="career-card__footer" style="margin-top:16px;">
+        <button class="btn btn--lg" type="submit">Submit Application</button>
+        <a class="btn btn--outline" href="{% url 'configurator:career_terms' %}">Terms</a>
+      </footer>
+    </form>
+  </article>
+</div>
+{% endblock %}
